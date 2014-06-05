@@ -6,17 +6,10 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
-	$('.inspiration-getter').submit( function(event){
-		// zero out results if previous search has run
-		$('.results').html('');
-		// get the top answerers for the tag the user submitted
-		var tag = $(this).find("input[name='answerers']").val();
-		getInspiration(tag);
-	});
 });
 
 // this function takes the question object returned by StackOverflow 
-// and creates new Unanswered result to be appended to DOM
+// and creates new result to be appended to DOM
 var showQuestion = function(question) {
 	
 	// clone our result template code
@@ -49,30 +42,6 @@ var showQuestion = function(question) {
 };
 
 
-// this function takes the tag score object returned by StackOverflow 
-// and creates new Answerer result to be appended to DOM
-var showInspiration = function(u) {
-	
-	// clone our result template code
-	var result = $('.templates .answerer').clone();
-	
-	// Set the user property in result //
-	var Answerer = result.find('.name a');
-	Answerer.attr('href', u.user.link);
-	Answerer.text(u.user.display_name);
-
-	// set the post_count property in result
-	var count = result.find('.post-count');
-	count.text(u.post_count);
-
-	// set the score property in result
-	var score = result.find('.score-num');
-	score.text(u.score);
-
-	return result;
-};
-
-
 // this function takes the results object from StackOverflow
 // and creates info about search results to be appended to DOM
 var showSearchResults = function(query, resultNum) {
@@ -99,7 +68,7 @@ var getUnanswered = function(tags) {
 		sort: 'creation'};
 	
 	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/questions/unanswered",
+		url: "http://api.stackexchange.com/2.2/questions/unanswered", //this is url from api, up to question mark
 		data: request,
 		dataType: "jsonp",
 		type: "GET",
@@ -119,41 +88,6 @@ var getUnanswered = function(tags) {
 		$('.search-results').append(errorElem);
 	});
 };
-
-
-// takes a tag to search for top answerers on StackOverflow
-var getInspiration = function(tag) {
-	
-	// the parameters we need to pass in our request to StackOverflow's API
-	var request = {
-		tagged: tag,
-		site: 'stackoverflow',
-		order: 'desc',
-		sort: 'creation'};
-	
-	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/tags/" + tag + "/top-answerers/all_time",
-		data: request,
-		dataType: "jsonp",
-		type: "GET",
-		})
-	.done(function(result){
-		var searchResults = showSearchResults(tag, result.items.length);
-
-		$('.search-results').html(searchResults);
-
-		$.each(result.items, function(i, item) {
-			var inspiration = showInspiration(item);
-			$('.results').append(inspiration);
-		});
-	})
-	.fail(function(jqXHR, error, errorThrown){
-		var errorElem = showError(error);
-		$('.search-results').append(errorElem);
-	});
-};
-
-
 
 
 
